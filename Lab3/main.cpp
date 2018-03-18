@@ -13,15 +13,25 @@
 #include <GLUT/GLUT.h>
 #endif
 
+#define INIT_ZOOM 1.0
+#define INIT_FOV 40.0
+#define INIT_ANGLE 0
+#define INIT_ANGLE_2 0
+#define INIT_X_TRANSLATION 0
+#define INIT_NEAR_CP 1
+#define INIT_FAR_CP 80
+
 // global variable
 
 bool m_Smooth = false;
 bool m_Highlight = false;
-GLfloat angle = 0;   /* in degrees */
-GLfloat angle2 = 0;   /* in degrees */
-GLfloat zoom = 1.0;
-GLfloat field_of_view = 40.0;
-GLfloat x_translation = 0.0;
+GLfloat angle = INIT_ANGLE;   /* in degrees */
+GLfloat angle2 = INIT_ANGLE_2;   /* in degrees */
+GLfloat zoom = INIT_ZOOM;
+GLfloat field_of_view = INIT_FOV;
+GLfloat x_translation = INIT_X_TRANSLATION;
+GLfloat near_clipping_plane = INIT_NEAR_CP;
+GLfloat far_clipping_plane = INIT_FAR_CP;
 
 int mouseButton = 0;
 int moving, startx, starty;
