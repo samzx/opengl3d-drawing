@@ -101,16 +101,34 @@ void drawSphere(double r)
 			if (m_Smooth) {
 				glBegin(GL_POLYGON);
 
-				// the normal of each vertex is actaully its own coordinates normalized for a sphere
-
-				// your normal here
-				glVertex3d(r*sin(i*M_PI / n)*cos(j*M_PI / n), r*cos(i*M_PI / n)*cos(j*M_PI / n), r*sin(j*M_PI / n));
-				// your normal here
-				glVertex3d(r*sin((i + 1)*M_PI / n)*cos(j*M_PI / n), r*cos((i + 1)*M_PI / n)*cos(j*M_PI / n), r*sin(j*M_PI / n));
-				// your normal here
-				glVertex3d(r*sin((i + 1)*M_PI / n)*cos((j + 1)*M_PI / n), r*cos((i + 1)*M_PI / n)*cos((j + 1)*M_PI / n), r*sin((j + 1)*M_PI / n));
-				// your normal here
-				glVertex3d(r*sin(i*M_PI / n)*cos((j + 1)*M_PI / n), r*cos(i*M_PI / n)*cos((j + 1)*M_PI / n), r*sin((j + 1)*M_PI / n));
+                // the normal of each vertex is actaully its own coordinates normalized for a sphere
+                // As sphere center is 0,0 normal from vertex is same as vector from center to vertex
+                
+                float v1x = r*sin(i*M_PI / n)*cos(j*M_PI / n);
+                float v1y = r*cos(i*M_PI / n)*cos(j*M_PI / n);
+                float v1z = r*sin(j*M_PI / n);
+                glNormal3d(v1x, v1y, v1z);
+                glVertex3d(v1x, v1y, v1z);
+                
+                float v2x = r*sin((i + 1)*M_PI / n)*cos(j*M_PI / n);
+                float v2y = r*cos((i + 1)*M_PI / n)*cos(j*M_PI / n);
+                float v2z =  r*sin(j*M_PI / n);
+                glNormal3d(v2x, v2y,v2z);
+                glVertex3d(v2x, v2y,v2z);
+                
+                
+                float v3x = r*sin((i + 1)*M_PI / n)*cos((j + 1)*M_PI / n);
+                float v3y = r*cos((i + 1)*M_PI / n)*cos((j + 1)*M_PI / n);
+                float v3z = r*sin((j + 1)*M_PI / n);
+                glNormal3d(v3x, v3y,v3z);
+                glVertex3d(v3x, v3y, v3z);
+                
+                float v4x = r*sin(i*M_PI / n)*cos((j + 1)*M_PI / n);
+                float v4y = r*cos(i*M_PI / n)*cos((j + 1)*M_PI / n);
+                float v4z = r*sin((j + 1)*M_PI / n);
+                glNormal3d(v4x, v4y, v4z);
+                glVertex3d(v4x, v4y, v4z);
+                
 				glEnd();
 			}
 			else {
