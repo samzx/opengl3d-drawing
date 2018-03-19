@@ -78,7 +78,6 @@ void configureMaterials() {
     float no_shininess = 0.0f;
     glMaterialfv(GL_FRONT, GL_AMBIENT, mat_ambient);
     glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
-    glMaterialfv(GL_FRONT, GL_EMISSION, no_mat);
     
     if (m_Highlight) {
         // your codes for highlight here
@@ -90,9 +89,9 @@ void configureMaterials() {
     }
     
     if (m_Emission) {
-        
+        glMaterialfv(GL_FRONT, GL_EMISSION, mat_emission);
     } else {
-        
+        glMaterialfv(GL_FRONT, GL_EMISSION, no_mat);
     }
 }
 
