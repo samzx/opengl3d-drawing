@@ -67,81 +67,146 @@ void setupLighting()
 
 }
 
-
-void drawSphere(double r)
-{
-
-	float no_mat[] = { 0.0f, 0.0f, 0.0f, 1.0f };
-	float mat_ambient[] = { 0.3f, 0.3f, 0.3f, 1.0f };
-	float mat_diffuse[] = { 0.1f, 0.5f, 0.8f, 1.0f };
-	float mat_emission[] = { 0.3f, 0.2f, 0.2f, 0.0f };
+void configureMaterials() {
+    float no_mat[] = { 0.0f, 0.0f, 0.0f, 1.0f };
+    float mat_ambient[] = { 0.3f, 0.3f, 0.3f, 1.0f };
+    float mat_diffuse[] = { 0.1f, 0.5f, 0.8f, 1.0f };
+    float mat_emission[] = { 0.3f, 0.2f, 0.2f, 0.0f };
     float mat_specular[] = { 0.3f, 0.3f, 0.3f, 1.0f };
     float shininess = 5.0f;
-	float no_shininess = 0.0f;
-	glMaterialfv(GL_FRONT, GL_AMBIENT, mat_ambient);
-	glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
-	glMaterialfv(GL_FRONT, GL_EMISSION, no_mat);
-
-	if (m_Highlight)
-	{
-		// your codes for highlight here
+    float no_shininess = 0.0f;
+    glMaterialfv(GL_FRONT, GL_AMBIENT, mat_ambient);
+    glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
+    glMaterialfv(GL_FRONT, GL_EMISSION, no_mat);
+    
+    if (m_Highlight)
+    {
+        // your codes for highlight here
         glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
         glMaterialf(GL_FRONT, GL_SHININESS, shininess);
-	}
-	else {
-		glMaterialfv(GL_FRONT, GL_SPECULAR, no_mat);
-		glMaterialf(GL_FRONT, GL_SHININESS, no_shininess);
-	}
+    }
+    else {
+        glMaterialfv(GL_FRONT, GL_SPECULAR, no_mat);
+        glMaterialf(GL_FRONT, GL_SHININESS, no_shininess);
+    }
+}
 
+
+void drawSphere(double x, double y, double z, double r)
+{
+    configureMaterials();
 
 	int i, j;
 	int n = 20;
-	for (i = 0; i<n; i++)
-		for (j = 0; j<2 * n; j++)
-			if (m_Smooth) {
-				glBegin(GL_POLYGON);
-
+    for (i = 0; i<n; i++) {
+        for (j = 0; j<2 * n; j++) {
+            
+            // Four verticies of a quad of a sphere
+            
+            float v1x = r*sin(i*M_PI / n)*cos(j*M_PI / n);
+            float v1y = r*cos(i*M_PI / n)*cos(j*M_PI / n);
+            float v1z = r*sin(j*M_PI / n);
+            
+            float v2x = r*sin((i + 1)*M_PI / n)*cos(j*M_PI / n);
+            float v2y = r*cos((i + 1)*M_PI / n)*cos(j*M_PI / n);
+            float v2z = r*sin(j*M_PI / n);
+            
+            float v3x = r*sin((i + 1)*M_PI / n)*cos((j + 1)*M_PI / n);
+            float v3y = r*cos((i + 1)*M_PI / n)*cos((j + 1)*M_PI / n);
+            float v3z = r*sin((j + 1)*M_PI / n);
+            
+            float v4x = r*sin(i*M_PI / n)*cos((j + 1)*M_PI / n);
+            float v4y = r*cos(i*M_PI / n)*cos((j + 1)*M_PI / n);
+            float v4z = r*sin((j + 1)*M_PI / n);
+            
+            if (m_Smooth) {
+                glBegin(GL_POLYGON);
+                
                 // the normal of each vertex is actaully its own coordinates normalized for a sphere
-                // As sphere center is 0,0 normal from vertex is same as vector from center to vertex
-                
-                float v1x = r*sin(i*M_PI / n)*cos(j*M_PI / n);
-                float v1y = r*cos(i*M_PI / n)*cos(j*M_PI / n);
-                float v1z = r*sin(j*M_PI / n);
-                glNormal3d(v1x, v1y, v1z);
-                glVertex3d(v1x, v1y, v1z);
-                
-                float v2x = r*sin((i + 1)*M_PI / n)*cos(j*M_PI / n);
-                float v2y = r*cos((i + 1)*M_PI / n)*cos(j*M_PI / n);
-                float v2z =  r*sin(j*M_PI / n);
-                glNormal3d(v2x, v2y,v2z);
-                glVertex3d(v2x, v2y,v2z);
-                
-                
-                float v3x = r*sin((i + 1)*M_PI / n)*cos((j + 1)*M_PI / n);
-                float v3y = r*cos((i + 1)*M_PI / n)*cos((j + 1)*M_PI / n);
-                float v3z = r*sin((j + 1)*M_PI / n);
-                glNormal3d(v3x, v3y,v3z);
-                glVertex3d(v3x, v3y, v3z);
-                
-                float v4x = r*sin(i*M_PI / n)*cos((j + 1)*M_PI / n);
-                float v4y = r*cos(i*M_PI / n)*cos((j + 1)*M_PI / n);
-                float v4z = r*sin((j + 1)*M_PI / n);
-                glNormal3d(v4x, v4y, v4z);
-                glVertex3d(v4x, v4y, v4z);
-                
-				glEnd();
-			}
-			else {
-				glBegin(GL_POLYGON);
-				// Explanation: the normal of the whole polygon is the coordinate of the center of the polygon for a sphere
-				glNormal3d(sin((i + 0.5)*M_PI / n)*cos((j + 0.5)*M_PI / n), cos((i + 0.5)*M_PI / n)*cos((j + 0.5)*M_PI / n), sin((j + 0.5)*M_PI / n));
-				glVertex3d(r*sin(i*M_PI / n)*cos(j*M_PI / n), r*cos(i*M_PI / n)*cos(j*M_PI / n), r*sin(j*M_PI / n));
-				glVertex3d(r*sin((i + 1)*M_PI / n)*cos(j*M_PI / n), r*cos((i + 1)*M_PI / n)*cos(j*M_PI / n), r*sin(j*M_PI / n));
-				glVertex3d(r*sin((i + 1)*M_PI / n)*cos((j + 1)*M_PI / n), r*cos((i + 1)*M_PI / n)*cos((j + 1)*M_PI / n), r*sin((j + 1)*M_PI / n));
-				glVertex3d(r*sin(i*M_PI / n)*cos((j + 1)*M_PI / n), r*cos(i*M_PI / n)*cos((j + 1)*M_PI / n), r*sin((j + 1)*M_PI / n));
-				glEnd();
-			}
 
+                glNormal3d(v1x, v1y, v1z);
+                glVertex3d(v1x + x, v1y + y, v1z + z);
+                
+                glNormal3d(v2x, v2y, v2z);
+                glVertex3d(v2x + x, v2y + y, v2z + z);
+                
+                glNormal3d(v3x, v3y, v3z);
+                glVertex3d(v3x + x, v3y + y, v3z + z);
+                
+                glNormal3d(v4x, v4y, v4z);
+                glVertex3d(v4x + x, v4y + y, v4z + z);
+                
+                glEnd();
+            }
+            else {
+                glBegin(GL_POLYGON);
+                // Explanation: the normal of the whole polygon is the coordinate of the center of the polygon for a sphere
+                glNormal3d(
+                           sin((i + 0.5)*M_PI / n)*cos((j + 0.5)*M_PI / n),
+                           cos((i + 0.5)*M_PI / n)*cos((j + 0.5)*M_PI / n),
+                           sin((j + 0.5)*M_PI / n)
+                           );
+                glVertex3d(v1x + x, v1y + y, v1z + z);
+                glVertex3d(v2x + x, v2y + y, v2z + z);
+                glVertex3d(v3x + x, v3y + y, v3z + z);
+                glVertex3d(v4x + x, v4y + y, v4z + z);
+                glEnd();
+            }
+        }
+    }
+
+}
+
+void drawCylinder(double x, double y, double z, double r, double h)
+{
+    configureMaterials();
+    int i;
+    int n = 20;
+    
+    for (i = 0; i<n; i++) {
+        float angle = i * M_PI * 2 / n;
+        float nextAngle = (i + 1) * M_PI * 2 / n;
+        
+        // Vertex top center
+        GLfloat vtc_x = x;
+        GLfloat vtc_y = y + 0.5f*h;
+        GLfloat vtc_z = z;
+        
+        // Vertex top edge 1
+        GLfloat vt1_x = x + r * sin(angle);
+        GLfloat vt1_y = vtc_y;
+        GLfloat vt1_z = z + r * cos(angle);
+        
+        // Vertex top edge 2
+        GLfloat vt2_x = x + r * sin(nextAngle);
+        GLfloat vt2_y = vtc_y;
+        GLfloat vt2_z = z + r * cos(nextAngle);
+        
+        // Vertex bottom center
+        GLfloat vbc_x = vtc_x - h;
+        GLfloat vbc_y = vtc_y - h;
+        GLfloat vbc_z = vtc_z - h;
+        
+        // Vertex bottom edge 1
+        GLfloat vb1_x = vt1_x - h;
+        GLfloat vb1_y = vt1_y - h;
+        GLfloat vb1_z = vt1_z - h;
+        
+        // Vertex bottom edge 2
+        GLfloat vb2_x = vt2_x - h;
+        GLfloat vb2_y = vt2_y - h;
+        GLfloat vb2_z = vt2_z - h;
+        
+        if (m_Smooth) {
+            
+        } else {
+            glBegin(GL_POLYGON);
+            
+            
+            
+            glEnd();
+        }
+    }
 }
 
 void display(void)
@@ -153,8 +218,7 @@ void display(void)
     glLoadIdentity();
     gluPerspective(field_of_view, 1.0, near_clipping_plane, far_clipping_plane);
     glMatrixMode(GL_MODELVIEW);
-    int upVector = 1;
-    gluLookAt(1, 1, 1, 1, 1, -1, 0, 1, 0);
+    gluLookAt(0, 0, 0, 1, 1, -1, 0, 1, 0); // eye, center, up
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
@@ -167,7 +231,7 @@ void display(void)
 	
 	switch (current_object) {
 	case 0:
-		drawSphere(1);
+		drawSphere(0,1,0,1);
 		break;
 	case 1:
 		// draw your second primitive object here
@@ -236,12 +300,12 @@ void keyboard(unsigned char key, int x, int y)
 		break;
 
     case 'n':
-    near_clipping_plane++;
+    near_clipping_plane+=0.1f;
     cout << "Near Clipping Plane: " << near_clipping_plane << "\n";
     break;
     
     case 'N':
-    near_clipping_plane < 1 ? 0 : near_clipping_plane--;
+    near_clipping_plane < 0.1f ? 0 : near_clipping_plane-=0.1f;
     cout << "Near Clipping Plane: " << near_clipping_plane << "\n";
     break;
     
