@@ -199,16 +199,15 @@ void resetCamera(){
 }
 
 void setCameraBestAngle() {
-	/*
-	//fill in values below
-	zoom =
-	angle =
-	angle2 =
-	zoom =
-	field_of_view =
-	x_translation =
-	//TIPS: Adjust gluLookAt function to change camera position
-	*/
+    //fill in values below
+    zoom = INIT_ZOOM;
+    angle =   INIT_ANGLE;
+    angle2 =   INIT_ANGLE_2;
+    zoom = 2.0;
+    field_of_view = INIT_FOV;
+    x_translation = INIT_X_TRANSLATION;
+    //TIPS: Adjust gluLookAt function to change camera position
+    
 	return;
 }
 
