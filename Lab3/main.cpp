@@ -149,7 +149,12 @@ void display(void)
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 
-
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    gluPerspective(field_of_view, 1.0, near_clipping_plane, far_clipping_plane);
+    glMatrixMode(GL_MODELVIEW);
+    int upVector = 1;
+    gluLookAt(1, 1, 1, 1, 1, -1, 0, 1, 0);
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
