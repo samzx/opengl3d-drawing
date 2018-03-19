@@ -25,6 +25,7 @@
 
 bool m_Smooth = false;
 bool m_Highlight = false;
+bool m_Emission = false;
 GLfloat angle = INIT_ANGLE;   /* in degrees */
 GLfloat angle2 = INIT_ANGLE_2;   /* in degrees */
 GLfloat zoom = INIT_ZOOM;
@@ -79,15 +80,19 @@ void configureMaterials() {
     glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
     glMaterialfv(GL_FRONT, GL_EMISSION, no_mat);
     
-    if (m_Highlight)
-    {
+    if (m_Highlight) {
         // your codes for highlight here
         glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
         glMaterialf(GL_FRONT, GL_SHININESS, shininess);
-    }
-    else {
+    } else {
         glMaterialfv(GL_FRONT, GL_SPECULAR, no_mat);
         glMaterialf(GL_FRONT, GL_SHININESS, no_shininess);
+    }
+    
+    if (m_Emission) {
+        
+    } else {
+        
     }
 }
 
@@ -119,39 +124,24 @@ void drawSphere(double x, double y, double z, double r)
             float v4y = r*cos(i*M_PI / n)*cos((j + 1)*M_PI / n);
             float v4z = r*sin((j + 1)*M_PI / n);
             
-            if (m_Smooth) {
-                glBegin(GL_POLYGON);
-                
-                // the normal of each vertex is actaully its own coordinates normalized for a sphere
-
-                glNormal3d(v1x, v1y, v1z);
-                glVertex3d(v1x + x, v1y + y, v1z + z);
-                
-                glNormal3d(v2x, v2y, v2z);
-                glVertex3d(v2x + x, v2y + y, v2z + z);
-                
-                glNormal3d(v3x, v3y, v3z);
-                glVertex3d(v3x + x, v3y + y, v3z + z);
-                
-                glNormal3d(v4x, v4y, v4z);
-                glVertex3d(v4x + x, v4y + y, v4z + z);
-                
-                glEnd();
-            }
-            else {
-                glBegin(GL_POLYGON);
-                // Explanation: the normal of the whole polygon is the coordinate of the center of the polygon for a sphere
-                glNormal3d(
-                           sin((i + 0.5)*M_PI / n)*cos((j + 0.5)*M_PI / n),
-                           cos((i + 0.5)*M_PI / n)*cos((j + 0.5)*M_PI / n),
-                           sin((j + 0.5)*M_PI / n)
-                           );
-                glVertex3d(v1x + x, v1y + y, v1z + z);
-                glVertex3d(v2x + x, v2y + y, v2z + z);
-                glVertex3d(v3x + x, v3y + y, v3z + z);
-                glVertex3d(v4x + x, v4y + y, v4z + z);
-                glEnd();
-            }
+            glBegin(GL_POLYGON);
+            
+            // the normal of each vertex is actaully its own coordinates normalized for a sphere
+            if(m_Smooth) glNormal3d(v1x, v1y, v1z);
+            // Explanation: the normal of the whole polygon is the coordinate of the center of the polygon for a sphere
+            else glNormal3d(sin((i + 0.5)*M_PI / n)*cos((j + 0.5)*M_PI / n), cos((i + 0.5)*M_PI / n)*cos((j + 0.5)*M_PI / n), sin((j + 0.5)*M_PI / n));
+            glVertex3d(v1x + x, v1y + y, v1z + z);
+            
+            if(m_Smooth) glNormal3d(v2x, v2y, v2z);
+            glVertex3d(v2x + x, v2y + y, v2z + z);
+            
+            if(m_Smooth) glNormal3d(v3x, v3y, v3z);
+            glVertex3d(v3x + x, v3y + y, v3z + z);
+            
+            if(m_Smooth) glNormal3d(v4x, v4y, v4z);
+            glVertex3d(v4x + x, v4y + y, v4z + z);
+            
+            glEnd();
         }
     }
 
@@ -336,6 +326,11 @@ void keyboard(unsigned char key, int x, int y)
 	case 'H':
 		m_Highlight = !m_Highlight;
 		break;
+        
+    case 'e':
+    case 'E':
+        m_Emission = !m_Emission;
+        break;
 
     case 'n':
     near_clipping_plane+=0.1f;
