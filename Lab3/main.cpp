@@ -187,16 +187,14 @@ void display(void)
 
 
 void resetCamera(){
-	/*
-	//fill in values below.
-	zoom = 
-	angle =   
-	angle2 =   
-	zoom = 
-	field_of_view =
-	x_translation =
-	// include resetting of gluPerspective & gluLookAt.
-	*/
+    //fill in values below.
+    zoom = INIT_ZOOM;
+    angle =   INIT_ANGLE;
+    angle2 =   INIT_ANGLE_2;
+    zoom = INIT_ZOOM;
+    field_of_view = INIT_FOV;
+    x_translation = INIT_X_TRANSLATION;
+    // include resetting of gluPerspective & gluLookAt.
 	return;
 }
 
