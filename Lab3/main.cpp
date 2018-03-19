@@ -235,29 +235,35 @@ void keyboard(unsigned char key, int x, int y)
 		m_Highlight = !m_Highlight;
 		break;
 
-	case 'n':
-		// -Insert code to adjust Near-
-		break;
-
-	case 'N':
-		// -Insert code to adjust Near-
-		break;
-
-	case 'f':
-		// -Insert code to adjust Far-
-		break;
-
-	case 'F':
-		// -Insert code to adjust Far-
-		break;
-
-	case 'o':
-		// -Insert code to adjust Fovy-
-		break;
-
-	case 'O':
-		// -Insert code to adjust Fovy-
-		break;
+    case 'n':
+    near_clipping_plane++;
+    cout << "Near Clipping Plane: " << near_clipping_plane << "\n";
+    break;
+    
+    case 'N':
+    near_clipping_plane < 1 ? 0 : near_clipping_plane--;
+    cout << "Near Clipping Plane: " << near_clipping_plane << "\n";
+    break;
+    
+    case 'f':
+    far_clipping_plane ++;
+    cout << "Far Clipping Plane: " << far_clipping_plane << "\n";
+    break;
+    
+    case 'F':
+    far_clipping_plane < 1 ? 0 : far_clipping_plane--;
+    cout << "Far Clipping Plane: " << far_clipping_plane << "\n";
+    break;
+    
+    case 'o':
+    field_of_view++;
+    cout << "FOV: " << field_of_view << "\n";
+    break;
+    
+    case 'O':
+    field_of_view < 1 ? 0 : field_of_view--;
+    cout << "FOV: " << field_of_view << "\n";
+    break;
 
 	case 'r':
 		resetCamera();
