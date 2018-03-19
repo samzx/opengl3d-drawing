@@ -362,19 +362,6 @@ int main(int argc, char **argv)
 	glEnable(GL_DEPTH_TEST);
 	glDepthMask(GL_TRUE);
 
-//REMOVE FROM THIS SECTION
-
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    gluPerspective( /* field of view in degree */ 40.0,
-  /* aspect ratio */ 1.0,
-    /* Z near */ 1.0, /* Z far */ 80.0);
-	glMatrixMode(GL_MODELVIEW);
-	int upVector = 1;
-	gluLookAt(1, 1, 1, 1, 1, -1, 0, 1, 0);
-//TO THIS SECTION, after implementation of Projection and Camera movement tools
-//Hint: Transfer these functions over into void display(void), then add other variables
-
 	glutMainLoop();
 
 	return 0;
