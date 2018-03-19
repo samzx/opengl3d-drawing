@@ -183,28 +183,51 @@ void drawCylinder(double x, double y, double z, double r, double h)
         GLfloat vt2_z = z + r * cos(nextAngle);
         
         // Vertex bottom center
-        GLfloat vbc_x = vtc_x - h;
+        GLfloat vbc_x = vtc_x;
         GLfloat vbc_y = vtc_y - h;
-        GLfloat vbc_z = vtc_z - h;
+        GLfloat vbc_z = vtc_z;
         
         // Vertex bottom edge 1
-        GLfloat vb1_x = vt1_x - h;
+        GLfloat vb1_x = vt1_x;
         GLfloat vb1_y = vt1_y - h;
-        GLfloat vb1_z = vt1_z - h;
+        GLfloat vb1_z = vt1_z;
         
         // Vertex bottom edge 2
-        GLfloat vb2_x = vt2_x - h;
+        GLfloat vb2_x = vt2_x;
         GLfloat vb2_y = vt2_y - h;
-        GLfloat vb2_z = vt2_z - h;
+        GLfloat vb2_z = vt2_z;
         
         if (m_Smooth) {
             
+            
         } else {
+            
+            // Draw Top Cap
             glBegin(GL_POLYGON);
-            
-            
-            
+            glNormal3d(0, 1, 0);
+            glVertex3d(vtc_x, vtc_y, vtc_z);
+            glVertex3d(vt1_x, vt1_y, vt1_z);
+            glVertex3d(vt2_x, vt2_y, vt2_z);
             glEnd();
+            
+            // Draw cylinder sides
+            glBegin(GL_POLYGON);
+            GLfloat avAngle = (angle+nextAngle)/2;
+            glNormal3d(r*sin(avAngle), 0, r*cos(avAngle));
+            glVertex3d(vt1_x, vt1_y, vt1_z);
+            glVertex3d(vt2_x, vt2_y, vt2_z);
+            glVertex3d(vb2_x, vb2_y, vb2_z);
+            glVertex3d(vb1_x, vb1_y, vb1_z);
+            glEnd();
+            
+            // Draw Bottom Cap
+            glBegin(GL_POLYGON);
+            glNormal3d(0, -1, 0);
+            glVertex3d(vbc_x, vbc_y, vbc_z);
+            glVertex3d(vb1_x, vb1_y, vb1_z);
+            glVertex3d(vb2_x, vb2_y, vb2_z);
+            glEnd();
+
         }
     }
 }
@@ -235,6 +258,7 @@ void display(void)
 		break;
 	case 1:
 		// draw your second primitive object here
+        drawCylinder(0,0,0,1,2);
 		break;
 	case 2:
 		// draw your first composite object here
