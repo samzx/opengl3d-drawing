@@ -197,38 +197,52 @@ void drawCylinder(double x, double y, double z, double r, double h)
         GLfloat vb2_y = vt2_y - h;
         GLfloat vb2_z = vt2_z;
         
-        if (m_Smooth) {
-            
-            
-        } else {
-            
-            // Draw Top Cap
-            glBegin(GL_POLYGON);
-            glNormal3d(0, 1, 0);
-            glVertex3d(vtc_x, vtc_y, vtc_z);
-            glVertex3d(vt1_x, vt1_y, vt1_z);
-            glVertex3d(vt2_x, vt2_y, vt2_z);
-            glEnd();
-            
-            // Draw cylinder sides
-            glBegin(GL_POLYGON);
-            GLfloat avAngle = (angle+nextAngle)/2;
-            glNormal3d(r*sin(avAngle), 0, r*cos(avAngle));
-            glVertex3d(vt1_x, vt1_y, vt1_z);
-            glVertex3d(vt2_x, vt2_y, vt2_z);
-            glVertex3d(vb2_x, vb2_y, vb2_z);
-            glVertex3d(vb1_x, vb1_y, vb1_z);
-            glEnd();
-            
-            // Draw Bottom Cap
-            glBegin(GL_POLYGON);
-            glNormal3d(0, -1, 0);
-            glVertex3d(vbc_x, vbc_y, vbc_z);
-            glVertex3d(vb1_x, vb1_y, vb1_z);
-            glVertex3d(vb2_x, vb2_y, vb2_z);
-            glEnd();
-
-        }
+        // Draw Top Cap
+        glBegin(GL_POLYGON);
+        
+        glNormal3d(0, 1, 0);
+        glVertex3d(vtc_x, vtc_y, vtc_z);
+        
+        if(m_Smooth) glNormal3d(0, 1, 0);
+        glVertex3d(vt1_x, vt1_y, vt1_z);
+        
+        if(m_Smooth) glNormal3d(0, 1, 0);
+        glVertex3d(vt2_x, vt2_y, vt2_z);
+        
+        glEnd();
+        
+        // Draw cylinder sides
+        glBegin(GL_POLYGON);
+        
+        GLfloat avAngle = (angle+nextAngle)/2;
+        if(m_Smooth) glNormal3d(r*sin(angle), 0, r*cos(angle));
+        else glNormal3d(r*sin(avAngle), 0, r*cos(avAngle));
+        glVertex3d(vt1_x, vt1_y, vt1_z);
+        
+        if(m_Smooth) glNormal3d(r*sin(nextAngle), 0, r*cos(nextAngle));
+        glVertex3d(vt2_x, vt2_y, vt2_z);
+        
+        if(m_Smooth) glNormal3d(r*sin(nextAngle), 0, r*cos(nextAngle));
+        glVertex3d(vb2_x, vb2_y, vb2_z);
+        
+        if(m_Smooth) glNormal3d(r*sin(angle), 0, r*cos(angle));
+        glVertex3d(vb1_x, vb1_y, vb1_z);
+        
+        glEnd();
+        
+        // Draw Bottom Cap
+        glBegin(GL_POLYGON);
+        
+        glNormal3d(0, -1, 0);
+        glVertex3d(vbc_x, vbc_y, vbc_z);
+        
+        if(m_Smooth) glNormal3d(0, -1, 0);
+        glVertex3d(vb1_x, vb1_y, vb1_z);
+        
+        if(m_Smooth) glNormal3d(0, -1, 0);
+        glVertex3d(vb2_x, vb2_y, vb2_z);
+        
+        glEnd();
     }
 }
 
@@ -254,7 +268,7 @@ void display(void)
 	
 	switch (current_object) {
 	case 0:
-		drawSphere(0,1,0,1);
+		drawSphere(0,0,0,1);
 		break;
 	case 1:
 		// draw your second primitive object here
