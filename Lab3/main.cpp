@@ -42,6 +42,14 @@ int current_object = 0;
 
 using namespace std;
 
+// Ball components
+#define numPoints 500
+#define ANGLE_PRECISION 36000.0
+#define POSITION_PRECISION 1000.0
+#define PARTICLE_BOUNDS 5.0
+
+double x[numPoints],y[numPoints],z[numPoints];
+
 void setupLighting()
 {
 	glShadeModel(GL_SMOOTH);
@@ -72,7 +80,7 @@ void configureMaterials() {
     float no_mat[] = { 0.0f, 0.0f, 0.0f, 1.0f };
     float mat_ambient[] = { 0.3f, 0.3f, 0.3f, 1.0f };
     float mat_diffuse[] = { 0.1f, 0.5f, 0.8f, 1.0f };
-    float mat_emission[] = { 0.3f, 0.2f, 0.2f, 0.0f };
+    float mat_emission[] = { 0.2f, 0.2f, 0.2f, 0.0f };
     float mat_specular[] = { 0.3f, 0.3f, 0.3f, 1.0f };
     float shininess = 5.0f;
     float no_shininess = 0.0f;
@@ -96,12 +104,33 @@ void configureMaterials() {
 }
 
 
-void drawSphere(double x, double y, double z, double r)
+float generate_random_number(float precision = 100, float lower = 0, float upper = 1){
+    return rand()%(int)precision/precision * (upper - lower) + lower;
+}
+
+float square(float a) {
+    return a*a;
+}
+
+void init() {
+    glClearColor(0.1, 0.1, 0.1, 1);
+    glClear(GL_COLOR_BUFFER_BIT);
+    
+    for(int i = 0; i < numPoints; i++) {
+        float theta = (rand()%(int)ANGLE_PRECISION) / ANGLE_PRECISION * 2 * M_PI;
+        float phi = (rand()%(int)ANGLE_PRECISION) / ANGLE_PRECISION * 2 * M_PI;
+        x[i] = generate_random_number(POSITION_PRECISION, 0, PARTICLE_BOUNDS) * sin(theta) * cos(phi);
+        y[i] = generate_random_number(POSITION_PRECISION, 0, PARTICLE_BOUNDS) * sin(theta) * sin(phi);
+        z[i] = generate_random_number(POSITION_PRECISION, 0, PARTICLE_BOUNDS) * cos(theta);
+    }
+}
+
+void drawSphere(int n, double x, double y, double z, double r)
 {
     configureMaterials();
 
 	int i, j;
-	int n = 20;
+//    int n = 20;
     for (i = 0; i<n; i++) {
         for (j = 0; j<2 * n; j++) {
             
@@ -234,6 +263,59 @@ void drawCylinder(double x, double y, double z, double r, double h)
         glEnd();
     }
 }
+void drawFirstComposite() {
+    
+    glPushMatrix();
+    glRotatef((glutGet(GLUT_ELAPSED_TIME)/3)%360, 0, 1, 0);
+    
+    
+    int n = 20;
+    double r = 1;
+    for(int i=0; i<n; i++) {
+        drawSphere(20-i , r*cos(i*M_PI*2/8), i*0.1f-n*0.1/2, r*sin(i*M_PI*2/8), 0.1f);
+        r -= 0.05f;
+    }
+    
+    
+    glPopMatrix();
+    
+    glPushMatrix();
+    glRotatef(90, 0, 0, 1);
+    glRotatef(45, 1, 0, 0);
+    drawCylinder(0, 0, 0, 0.1, 1);
+    glPopMatrix();
+    
+    glutPostRedisplay();
+}
+
+void drawSecondComposite() {
+    glPushMatrix();
+    glRotatef(((glutGet(GLUT_ELAPSED_TIME)/36.0)), 0, 1, 0);
+    
+    for(int i=0; i<numPoints; i++) {
+        drawSphere(5, x[i], y[i], z[i], 0.01);
+    }
+    
+//    for(int i=0; i<numPoints-1; i++) {
+//        float distance = sqrtf(square(x[i]-x[i+1]) + square(y[i]-y[i+1]) + square(z[i]-z[i-1]));
+//        float midX = x[i] + (x[i+1] - x[i])/2;
+//        float midY = y[i] + (y[i+1] - y[i])/2;
+//        float midZ = z[i] + (z[i+1] - z[i])/2;
+//
+////        float angleDeltaXyPlane = atan( (x[i+1]-x[i]) / (y[i+1]-y[i]) ) * 180 / M_PI;
+////        float angleDeltaYzPlane = atan( (y[i+1]-y[i]) / (z[i+1]-z[i]) ) * 180 / M_PI;
+//
+//        glPushMatrix();
+//        glTranslatef(midX, midY, midZ);
+////        glRotatef(angleDeltaXyPlane, 0, 0, 1);
+////        glRotatef(angleDeltaYzPlane, cos(angleDeltaXyPlane), sin(angleDeltaXyPlane), 0);
+//        drawCylinder(0, 0, 0, 0.05, distance);
+//        glPopMatrix();
+//    }
+    
+    glPopMatrix();
+    glutPostRedisplay();
+}
 
 void display(void)
 {//Add Projection tool and Camera Movement somewhere here
@@ -257,7 +339,7 @@ void display(void)
 	
 	switch (current_object) {
 	case 0:
-		drawSphere(0,0,0,1);
+		drawSphere(20,0,0,0,1);
 		break;
 	case 1:
 		// draw your second primitive object here
@@ -265,9 +347,11 @@ void display(void)
 		break;
 	case 2:
 		// draw your first composite object here
+        drawFirstComposite();
 		break;
 	case 3:
 		// draw your second composite object here
+        drawSecondComposite();
 		break;
 	default:
 		break;
@@ -454,6 +538,8 @@ int main(int argc, char **argv)
 	glutMotionFunc(motion);
 	glutKeyboardFunc(keyboard);
 	setupLighting();
+    srand((uint32_t)time(NULL));
+    init();
 	glDisable(GL_CULL_FACE);
 	glEnable(GL_DEPTH_TEST);
 	glDepthMask(GL_TRUE);
