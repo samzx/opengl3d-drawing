@@ -43,7 +43,7 @@ int current_object = 0;
 using namespace std;
 
 // Ball components
-#define numPoints 500
+#define numPoints 2
 #define ANGLE_PRECISION 36000.0
 #define POSITION_PRECISION 1000.0
 #define PARTICLE_BOUNDS 5.0
@@ -290,28 +290,60 @@ void drawFirstComposite() {
 
 void drawSecondComposite() {
     glPushMatrix();
-    glRotatef(((glutGet(GLUT_ELAPSED_TIME)/36.0)), 0, 1, 0);
+//    glRotatef(((glutGet(GLUT_ELAPSED_TIME)/36.0)), 0, 1, 0);
     
     for(int i=0; i<numPoints; i++) {
-        drawSphere(5, x[i], y[i], z[i], 0.01);
+        drawSphere(5, x[i], y[i], z[i], 0.1);
     }
     
-//    for(int i=0; i<numPoints-1; i++) {
-//        float distance = sqrtf(square(x[i]-x[i+1]) + square(y[i]-y[i+1]) + square(z[i]-z[i-1]));
-//        float midX = x[i] + (x[i+1] - x[i])/2;
-//        float midY = y[i] + (y[i+1] - y[i])/2;
-//        float midZ = z[i] + (z[i+1] - z[i])/2;
-//
-////        float angleDeltaXyPlane = atan( (x[i+1]-x[i]) / (y[i+1]-y[i]) ) * 180 / M_PI;
-////        float angleDeltaYzPlane = atan( (y[i+1]-y[i]) / (z[i+1]-z[i]) ) * 180 / M_PI;
-//
-//        glPushMatrix();
-//        glTranslatef(midX, midY, midZ);
-////        glRotatef(angleDeltaXyPlane, 0, 0, 1);
-////        glRotatef(angleDeltaYzPlane, cos(angleDeltaXyPlane), sin(angleDeltaXyPlane), 0);
-//        drawCylinder(0, 0, 0, 0.05, distance);
-//        glPopMatrix();
-//    }
+    for(int i=0; i<numPoints-1; i++) {
+
+        float midX = x[i] + (x[i+1] - x[i])/2;
+        float midY = y[i] + (y[i+1] - y[i])/2;
+        float midZ = z[i] + (z[i+1] - z[i])/2;
+
+        float deltaX = x[i+1] - x[i];
+        float deltaY = y[i+1] - y[i];
+        float deltaZ = z[i+1] - z[i];
+        
+        float distance = sqrtf(square(deltaX) + square(deltaY) + square(deltaZ));
+        
+        //debug - draw up vector
+        glBegin(GL_LINES);
+        glColor3f(1, 1, 1);
+        glVertex3f(midX, midY, midZ);
+        glVertex3f(midX, midY + 1, midZ);
+        glEnd();
+        
+        //debug - draw delta vector
+        glBegin(GL_LINES);
+        glColor3f(1, 0, 0);
+        glVertex3f(midX, midY, midZ);
+        glVertex3f(midX + deltaX, midY + deltaY, midZ + deltaZ);
+        glEnd();
+        
+        // Normal of up vector with delta vector
+        float normalX = -deltaZ / sqrt(square(deltaZ) + square(deltaX));
+        float normalY = 0;
+        float normalZ = deltaX / sqrt(square(deltaZ) + square(deltaX));
+        
+        //debug - draw normal vector
+        glBegin(GL_LINES);
+        glColor3f(0, 1, 0);
+        glVertex3f(midX, midY, midZ);
+        glVertex3f(midX + normalX, midY + normalY, midZ + normalZ);
+        glEnd();
+        
+        // cosine angle
+        float deltaAngle = acos(deltaY / sqrt(square(deltaX) + square(deltaY) + square(deltaZ))) * 180 / M_PI;
+        cout << deltaAngle << "\n";
+
+        glPushMatrix();
+        glTranslatef(midX, midY, midZ);
+        glRotatef(-deltaAngle, normalX, normalY, normalZ);
+        drawCylinder(0, 0, 0, 0.005, distance);
+        glPopMatrix();
+    }
     
     glPopMatrix();
     glutPostRedisplay();
