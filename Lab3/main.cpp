@@ -43,10 +43,12 @@ int current_object = 0;
 using namespace std;
 
 // Ball components
-#define numPoints 2
+#define numPoints 500
 #define ANGLE_PRECISION 36000.0
 #define POSITION_PRECISION 1000.0
 #define PARTICLE_BOUNDS 5.0
+
+#define DEBUG_VECTORS 0
 
 double x[numPoints],y[numPoints],z[numPoints];
 
@@ -288,26 +290,28 @@ void drawFirstComposite() {
     glutPostRedisplay();
 }
 
-void drawSecondComposite() {
-    glPushMatrix();
-//    glRotatef(((glutGet(GLUT_ELAPSED_TIME)/36.0)), 0, 1, 0);
+void drawPipe(float x, float y, float z, float a, float b, float c) {
     
-    for(int i=0; i<numPoints; i++) {
-        drawSphere(5, x[i], y[i], z[i], 0.1);
-    }
+    // mid points between two points
+    float midX = x + (a - x)/2;
+    float midY = y + (b - y)/2;
+    float midZ = z + (c - z)/2;
     
-    for(int i=0; i<numPoints-1; i++) {
-
-        float midX = x[i] + (x[i+1] - x[i])/2;
-        float midY = y[i] + (y[i+1] - y[i])/2;
-        float midZ = z[i] + (z[i+1] - z[i])/2;
-
-        float deltaX = x[i+1] - x[i];
-        float deltaY = y[i+1] - y[i];
-        float deltaZ = z[i+1] - z[i];
-        
-        float distance = sqrtf(square(deltaX) + square(deltaY) + square(deltaZ));
-        
+    // delta vector that points towards the other point
+    float deltaX = a - x;
+    float deltaY = b - y;
+    float deltaZ = c - z;
+    
+    // distance between two points
+    float distance = sqrtf(square(deltaX) + square(deltaY) + square(deltaZ));
+    
+    // Normal of up vector with delta vector
+    float normalX = -deltaZ / sqrt(square(deltaZ) + square(deltaX));
+    float normalY = 0;
+    float normalZ = deltaX / sqrt(square(deltaZ) + square(deltaX));
+    
+    
+    if(DEBUG_VECTORS) {
         //debug - draw up vector
         glBegin(GL_LINES);
         glColor3f(1, 1, 1);
@@ -322,27 +326,44 @@ void drawSecondComposite() {
         glVertex3f(midX + deltaX, midY + deltaY, midZ + deltaZ);
         glEnd();
         
-        // Normal of up vector with delta vector
-        float normalX = -deltaZ / sqrt(square(deltaZ) + square(deltaX));
-        float normalY = 0;
-        float normalZ = deltaX / sqrt(square(deltaZ) + square(deltaX));
-        
         //debug - draw normal vector
         glBegin(GL_LINES);
         glColor3f(0, 1, 0);
         glVertex3f(midX, midY, midZ);
         glVertex3f(midX + normalX, midY + normalY, midZ + normalZ);
         glEnd();
-        
-        // cosine angle
-        float deltaAngle = acos(deltaY / sqrt(square(deltaX) + square(deltaY) + square(deltaZ))) * 180 / M_PI;
-        cout << deltaAngle << "\n";
+    }
+    
+    
+    // angle between up vector and delta vector using cosine angle formula
+    float deltaAngle = acos(deltaY / sqrt(square(deltaX) + square(deltaY) + square(deltaZ))) * 180 / M_PI;
+    
+    glPushMatrix();
+    
+    // Set local transform to where the cylinder is
+    glTranslatef(midX, midY, midZ);
+    
+    // Rotate up vector towards delta vector (aligns a object that is aligned up to align with two points)
+    glRotatef(-deltaAngle, normalX, normalY, normalZ);
+    
+    drawCylinder(0, 0, 0, 0.0025, distance);
+    
+    glPopMatrix();
+}
 
-        glPushMatrix();
-        glTranslatef(midX, midY, midZ);
-        glRotatef(-deltaAngle, normalX, normalY, normalZ);
-        drawCylinder(0, 0, 0, 0.005, distance);
-        glPopMatrix();
+void drawSecondComposite() {
+    glPushMatrix();
+    glRotatef(((glutGet(GLUT_ELAPSED_TIME)/36.0)), 0, 1, 0);
+    
+    for(int i=0; i<numPoints; i++) {
+        drawSphere(5, x[i], y[i], z[i], 0.01);
+    }
+    
+    int drawPipes = 0;
+    if(drawPipes == 1) {
+        for(int i=0; i<numPoints-1; i++) {
+            drawPipe(x[i],y[i],z[i],x[i+1],y[i+1],z[i+1]);
+        }
     }
     
     glPopMatrix();
