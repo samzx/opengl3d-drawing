@@ -18,15 +18,14 @@
 #define INIT_FOV 90.0
 #define INIT_ANGLE 0
 #define INIT_ANGLE_2 0
-#define INIT_X_TRANSLATION 0
 #define INIT_NEAR_CP 0.01
 #define INIT_FAR_CP 1000
 
 #define INIT_EYE_X 0
 #define INIT_EYE_Y 0
 #define INIT_EYE_Z 0
-#define INIT_CENTER_X 1
-#define INIT_CENTER_Y -1
+#define INIT_CENTER_X 0
+#define INIT_CENTER_Y 0
 #define INIT_CENTER_Z -1
 
 // global variable
@@ -38,7 +37,6 @@ GLfloat angle = INIT_ANGLE;   /* in degrees */
 GLfloat angle2 = INIT_ANGLE_2;   /* in degrees */
 GLfloat zoom = INIT_ZOOM;
 GLfloat field_of_view = INIT_FOV;
-GLfloat x_translation = INIT_X_TRANSLATION;
 GLfloat near_clipping_plane = INIT_NEAR_CP;
 GLfloat far_clipping_plane = INIT_FAR_CP;
 
@@ -61,7 +59,7 @@ using namespace std;
 #define PARTICLE_BOUNDS 0
 #define MAX_VELOCITY 20
 #define ACTIVE_TIME 1
-#define EXPLODE_LOOP_TIME 1000
+#define EXPLODE_LOOP_TIME 2
 
 int lastTime = 0;
 float accTime = 0;
@@ -86,8 +84,8 @@ double ivx[numPoints], ivy[numPoints], ivz[numPoints];
 #define Y 1;
 #define Z 2;
 
-#define PIPE_START_X 0
-#define PIPE_START_Y 0
+#define PIPE_START_X 5
+#define PIPE_START_Y -5
 #define PIPE_START_Z -5
 
 #define PIPE_DISTANCE 1
@@ -572,7 +570,6 @@ void resetCamera(){
     angle2 =   INIT_ANGLE_2;
     zoom = INIT_ZOOM;
     field_of_view = INIT_FOV;
-    x_translation = INIT_X_TRANSLATION;
 
     // Reset look at
     eyeX = INIT_EYE_X;
@@ -593,11 +590,10 @@ void setCameraBestAngle() {
     angle2 =   INIT_ANGLE_2;
     zoom = INIT_ZOOM;
     field_of_view = INIT_FOV;
-    x_translation = INIT_X_TRANSLATION;
     
     // Set look at
-    centerX = 0;
-    centerY = 0;
+    centerX = 1;
+    centerY = -1;
     centerZ = -1;
     eyeX = 0;
     eyeY = 0;
