@@ -42,15 +42,45 @@ int current_object = 0;
 
 using namespace std;
 
-// Ball components
+// First composite components
+
 #define numPoints 500
 #define ANGLE_PRECISION 36000.0
 #define POSITION_PRECISION 1000.0
 #define PARTICLE_BOUNDS 5.0
 
-#define DEBUG_VECTORS 0
-
 double x[numPoints],y[numPoints],z[numPoints];
+// -----------------------------------------
+
+// Second composite components
+
+#define FORWARD 0
+#define BACKWARDS 1
+#define UP 2
+#define DOWN 3
+#define LEFT 4
+#define RIGHT 5
+
+#define X 0;
+#define Y 1;
+#define Z 2;
+
+#define PIPE_DISTANCE 1
+#define MAX_SPHERES 1000
+
+int lastDirection = FORWARD;
+int direction = FORWARD;
+
+float spheresX[MAX_SPHERES];
+float spheresY[MAX_SPHERES];
+float spheresZ[MAX_SPHERES];
+int numSpheres = 0;
+
+float pipeX = 0;
+float pipeY = 0;
+float pipeZ = 0;
+
+// ----------------------------------------
 
 void setupLighting()
 {
@@ -127,39 +157,39 @@ void init() {
     }
 }
 
-void drawSphere(int n, double x, double y, double z, double r)
+void drawSphere(int res, double x, double y, double z, double r)
 {
     configureMaterials();
 
 	int i, j;
 //    int n = 20;
-    for (i = 0; i<n; i++) {
-        for (j = 0; j<2 * n; j++) {
+    for (i = 0; i<res; i++) {
+        for (j = 0; j<2 * res; j++) {
             
             // Four verticies of a quad of a sphere
             
-            float v1x = r*sin(i*M_PI / n)*cos(j*M_PI / n);
-            float v1y = r*cos(i*M_PI / n)*cos(j*M_PI / n);
-            float v1z = r*sin(j*M_PI / n);
+            float v1x = r*sin(i*M_PI / res)*cos(j*M_PI / res);
+            float v1y = r*cos(i*M_PI / res)*cos(j*M_PI / res);
+            float v1z = r*sin(j*M_PI / res);
             
-            float v2x = r*sin((i + 1)*M_PI / n)*cos(j*M_PI / n);
-            float v2y = r*cos((i + 1)*M_PI / n)*cos(j*M_PI / n);
-            float v2z = r*sin(j*M_PI / n);
+            float v2x = r*sin((i + 1)*M_PI / res)*cos(j*M_PI / res);
+            float v2y = r*cos((i + 1)*M_PI / res)*cos(j*M_PI / res);
+            float v2z = r*sin(j*M_PI / res);
             
-            float v3x = r*sin((i + 1)*M_PI / n)*cos((j + 1)*M_PI / n);
-            float v3y = r*cos((i + 1)*M_PI / n)*cos((j + 1)*M_PI / n);
-            float v3z = r*sin((j + 1)*M_PI / n);
+            float v3x = r*sin((i + 1)*M_PI / res)*cos((j + 1)*M_PI / res);
+            float v3y = r*cos((i + 1)*M_PI / res)*cos((j + 1)*M_PI / res);
+            float v3z = r*sin((j + 1)*M_PI / res);
             
-            float v4x = r*sin(i*M_PI / n)*cos((j + 1)*M_PI / n);
-            float v4y = r*cos(i*M_PI / n)*cos((j + 1)*M_PI / n);
-            float v4z = r*sin((j + 1)*M_PI / n);
+            float v4x = r*sin(i*M_PI / res)*cos((j + 1)*M_PI / res);
+            float v4y = r*cos(i*M_PI / res)*cos((j + 1)*M_PI / res);
+            float v4z = r*sin((j + 1)*M_PI / res);
             
             glBegin(GL_POLYGON);
             
             // the normal of each vertex is actaully its own coordinates normalized for a sphere
             if(m_Smooth) glNormal3d(v1x, v1y, v1z);
             // Explanation: the normal of the whole polygon is the coordinate of the center of the polygon for a sphere
-            else glNormal3d(sin((i + 0.5)*M_PI / n)*cos((j + 0.5)*M_PI / n), cos((i + 0.5)*M_PI / n)*cos((j + 0.5)*M_PI / n), sin((j + 0.5)*M_PI / n));
+            else glNormal3d(sin((i + 0.5)*M_PI / res)*cos((j + 0.5)*M_PI / res), cos((i + 0.5)*M_PI / res)*cos((j + 0.5)*M_PI / res), sin((j + 0.5)*M_PI / res));
             glVertex3d(v1x + x, v1y + y, v1z + z);
             
             if(m_Smooth) glNormal3d(v2x, v2y, v2z);
@@ -177,11 +207,10 @@ void drawSphere(int n, double x, double y, double z, double r)
 
 }
 
-void drawCylinder(double x, double y, double z, double r, double h)
+void drawCylinder(int n, double x, double y, double z, double r, double h)
 {
     configureMaterials();
     int i;
-    int n = 20;
     
     for (i = 0; i<n; i++) {
         float angle = i * M_PI * 2 / n;
@@ -267,7 +296,7 @@ void drawCylinder(double x, double y, double z, double r, double h)
 }
 
 
-void drawPipe(float x, float y, float z, float a, float b, float c) {
+void drawPipe(float x, float y, float z, float a, float b, float c, float r) {
     
     // mid points between two points
     float midX = x + (a - x)/2;
@@ -282,34 +311,16 @@ void drawPipe(float x, float y, float z, float a, float b, float c) {
     // distance between two points
     float distance = sqrtf(square(deltaX) + square(deltaY) + square(deltaZ));
     
-    // Normal of up vector with delta vector
-    float normalX = -deltaZ / sqrt(square(deltaZ) + square(deltaX));
-    float normalY = 0;
-    float normalZ = deltaX / sqrt(square(deltaZ) + square(deltaX));
-    
-    
-    if(DEBUG_VECTORS) {
-        //debug - draw up vector
-        glBegin(GL_LINES);
-        glColor3f(1, 1, 1);
-        glVertex3f(midX, midY, midZ);
-        glVertex3f(midX, midY + 1, midZ);
-        glEnd();
-        
-        //debug - draw delta vector
-        glBegin(GL_LINES);
-        glColor3f(1, 0, 0);
-        glVertex3f(midX, midY, midZ);
-        glVertex3f(midX + deltaX, midY + deltaY, midZ + deltaZ);
-        glEnd();
-        
-        //debug - draw normal vector
-        glBegin(GL_LINES);
-        glColor3f(0, 1, 0);
-        glVertex3f(midX, midY, midZ);
-        glVertex3f(midX + normalX, midY + normalY, midZ + normalZ);
-        glEnd();
+    if(deltaX == 0 && deltaZ == 0) {
+        drawCylinder(5, midX, midY, midZ, r, distance);
+        return;
     }
+    
+    // Normal of up vector with delta vector
+    float denom = sqrt(square(deltaZ) + square(deltaX));
+    float normalX = -deltaZ / denom;
+    float normalY = 0;
+    float normalZ = deltaX / denom;
     
     
     // angle between up vector and delta vector using cosine angle formula
@@ -323,12 +334,41 @@ void drawPipe(float x, float y, float z, float a, float b, float c) {
     // Rotate up vector towards delta vector (aligns a object that is aligned up to align with two points)
     glRotatef(-deltaAngle, normalX, normalY, normalZ);
     
-    drawCylinder(0, 0, 0, 0.0025, distance);
+    drawCylinder(5, 0, 0, 0, r, distance);
     
     glPopMatrix();
+    
+    // TO USE FOR DEBUGGING PURPOSES
+    int DEBUG_VECTORS = 0;
+    if(DEBUG_VECTORS) {
+        //debug - draw up vector
+        glBegin(GL_LINES);
+        glColor3f(1, 1, 1);
+        glVertex3f(midX, midY, midZ);
+        glColor3f(1, 1, 1);
+        glVertex3f(midX, midY + 1, midZ);
+        glEnd();
+        
+        //debug - draw delta vector
+        glBegin(GL_LINES);
+        glColor3f(1, 0, 0);
+        glVertex3f(midX, midY, midZ);
+        glColor3f(1, 0, 0);
+        glVertex3f(midX + deltaX, midY + deltaY, midZ + deltaZ);
+        glEnd();
+        
+        //debug - draw normal vector
+        glBegin(GL_LINES);
+        glColor3f(0, 1, 0);
+        glVertex3f(midX, midY, midZ);
+        glColor3f(0, 1, 0);
+        glVertex3f(midX + normalX, midY + normalY, midZ + normalZ);
+        glEnd();
+    }
+    
 }
 
-void drawSecondComposite() {
+void drawFirstComposite() {
     glPushMatrix();
     glRotatef(((glutGet(GLUT_ELAPSED_TIME)/36.0)), 0, 1, 0);
     
@@ -336,20 +376,59 @@ void drawSecondComposite() {
         drawSphere(5, x[i], y[i], z[i], 0.01);
     }
     
-    int drawPipes = 0;
-    if(drawPipes == 1) {
-        for(int i=0; i<numPoints-1; i++) {
-            drawPipe(x[i],y[i],z[i],x[i+1],y[i+1],z[i+1]);
-        }
-    }
-    
     glPopMatrix();
     glutPostRedisplay();
 }
 
-void drawFirstComposite() {
+void drawSecondComposite() {
     
+    for(int i=0; i<numSpheres; i++) {
+        drawSphere(5, spheresX[i], spheresY[i], spheresZ[i], 0.1);
+    }
     
+    for(int i=0; i<numSpheres-1; i++) {
+        drawPipe(spheresX[i], spheresY[i], spheresZ[i], spheresX[i+1], spheresY[i+1], spheresZ[i+1], 0.05);
+    }
+    
+    if(numSpheres + 1 >= MAX_SPHERES) return;
+    
+    while(direction == lastDirection) {
+        direction = rand()%6;
+    }
+    
+    switch (direction) {
+        case FORWARD:
+            pipeX += PIPE_DISTANCE;
+        break;
+        
+        case BACKWARDS:
+            pipeX -= PIPE_DISTANCE;
+        break;
+        
+        case UP:
+            pipeY += PIPE_DISTANCE;
+        break;
+        
+        case DOWN:
+            pipeY -= PIPE_DISTANCE;
+        break;
+        
+        case LEFT:
+            pipeZ += PIPE_DISTANCE;
+        break;
+        
+        case RIGHT:
+            pipeZ -= PIPE_DISTANCE;
+        break;
+        
+    }
+    
+    spheresX[numSpheres] = pipeX;
+    spheresY[numSpheres] = pipeY;
+    spheresZ[numSpheres] = pipeZ;
+    
+    numSpheres++;
+    lastDirection = direction;
     
     glutPostRedisplay();
 }
@@ -380,7 +459,7 @@ void display(void)
 		break;
 	case 1:
 		// draw your second primitive object here
-        drawCylinder(0,0,0,1,2);
+        drawCylinder(20,0,0,0,1,2);
 		break;
 	case 2:
 		// draw your first composite object here
