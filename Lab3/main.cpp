@@ -3,6 +3,7 @@
 #include "math.h"
 #include <iostream>
 #include <fstream>
+#include <time.h>
 
 #ifdef _WIN32
 #include <Windows.h>
@@ -21,6 +22,13 @@
 #define INIT_NEAR_CP 0.1
 #define INIT_FAR_CP 1000
 
+#define INIT_EYE_X 0
+#define INIT_EYE_Y 0
+#define INIT_EYE_Z 0
+#define INIT_CENTER_X 1
+#define INIT_CENTER_Y -1
+#define INIT_CENTER_Z -1
+
 // global variable
 
 bool m_Smooth = false;
@@ -33,6 +41,9 @@ GLfloat field_of_view = INIT_FOV;
 GLfloat x_translation = INIT_X_TRANSLATION;
 GLfloat near_clipping_plane = INIT_NEAR_CP;
 GLfloat far_clipping_plane = INIT_FAR_CP;
+
+float eyeX = INIT_EYE_X, eyeY = INIT_EYE_Y, eyeZ = INIT_EYE_Z;
+float centerX = INIT_CENTER_X, centerY = INIT_CENTER_X, centerZ = INIT_CENTER_Z;
 
 int mouseButton = 0;
 int moving, startx, starty;
@@ -443,19 +454,20 @@ void display(void)
 {//Add Projection tool and Camera Movement somewhere here
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+    glPushMatrix();
+    glTranslatef(0, 0, -6);
+    glRotatef(angle2, 1.0, 0.0, 0.0);
+    glRotatef(angle, 0.0, 1.0, 0.0);
+    
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     gluPerspective(field_of_view, 1.0, near_clipping_plane, far_clipping_plane);
     glMatrixMode(GL_MODELVIEW);
-//    gluLookAt(0, 0, 0, 1, 1, -1, 0, 1, 0); // eye, center, up
+    gluLookAt(eyeX, eyeY, eyeZ, centerX, centerY, centerZ, 0, 1, 0); // eye, center, up
 
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-    glPushMatrix();
-	glTranslatef(0, 0, -6);
-	glRotatef(angle2, 1.0, 0.0, 0.0);
-	glRotatef(angle, 0.0, 1.0, 0.0);
+
 
 	glScalef(zoom, zoom, zoom);
 	
@@ -484,30 +496,42 @@ void display(void)
 
 
 void resetCamera(){
-    //fill in values below.
+    // Reset Perspective
     zoom = INIT_ZOOM;
     angle =   INIT_ANGLE;
     angle2 =   INIT_ANGLE_2;
     zoom = INIT_ZOOM;
     field_of_view = INIT_FOV;
     x_translation = INIT_X_TRANSLATION;
-    // include resetting of gluPerspective & gluLookAt.
-    gluLookAt(0, 0, 0, 1, 1, -1, 0, 1, 0);
-    gluPerspective(field_of_view, 1.0, near_clipping_plane, far_clipping_plane);
+
+    // Reset look at
+    eyeX = INIT_EYE_X;
+    eyeY = INIT_EYE_Y;
+    eyeZ = INIT_EYE_Z;
+    
+    centerX = INIT_CENTER_X;
+    centerY = INIT_CENTER_Y;
+    centerZ = INIT_CENTER_Z;
     
 	return;
 }
 
 void setCameraBestAngle() {
-    //fill in values below
+    // Set perspective
     zoom = INIT_ZOOM;
     angle =   INIT_ANGLE;
     angle2 =   INIT_ANGLE_2;
     zoom = INIT_ZOOM;
-    field_of_view = 90;
+    field_of_view = INIT_FOV;
     x_translation = INIT_X_TRANSLATION;
-    gluLookAt(0, 0, 0, 1, 1, -1, 0, 1, 0);
-    //TIPS: Adjust gluLookAt function to change camera position
+    
+    // Set look at
+    centerX = 0;
+    centerY = 0;
+    centerZ = -1;
+    eyeX = 0;
+    eyeY = 0;
+    eyeZ = 0;
     
 	return;
 }
