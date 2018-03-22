@@ -449,7 +449,8 @@ void drawFirstComposite() {
     glRotatef(((glutGet(GLUT_ELAPSED_TIME)/100.0)), 0, 1, 0);
     
     for(int i=0; i<numPoints; i++) {
-        float mat_emission[] = { (1 - t), (1 - t), (1 - t), 1.0f };
+        float emi = (1 - t) < 0.1 ? 0.1 : 1 - t;
+        float mat_emission[] = { emi, emi, emi, 1.0f };
         glMaterialfv(GL_FRONT, GL_EMISSION, mat_emission);
         drawSphere(x[i], y[i], z[i], 0.02, 3);
     }
