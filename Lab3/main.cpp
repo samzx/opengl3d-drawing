@@ -19,7 +19,7 @@
 #define INIT_ANGLE 0
 #define INIT_ANGLE_2 0
 #define INIT_X_TRANSLATION 0
-#define INIT_NEAR_CP 0.1
+#define INIT_NEAR_CP 0.01
 #define INIT_FAR_CP 1000
 
 #define INIT_EYE_X 0
@@ -55,12 +55,22 @@ using namespace std;
 
 // First composite components
 
-#define numPoints 1000
+#define numPoints 800
 #define ANGLE_PRECISION 36000.0
 #define POSITION_PRECISION 1000.0
-#define PARTICLE_BOUNDS 10.0
+#define PARTICLE_BOUNDS 0
+#define MAX_VELOCITY 20
+#define ACTIVE_TIME 1
+#define EXPLODE_LOOP_TIME 1000
+
+int lastTime = 0;
+float accTime = 0;
 
 double x[numPoints],y[numPoints],z[numPoints];
+double ix[numPoints],iy[numPoints],iz[numPoints];
+double vx[numPoints], vy[numPoints], vz[numPoints];
+double ivx[numPoints], ivy[numPoints], ivz[numPoints];
+
 // -----------------------------------------
 
 // Second composite components
@@ -120,6 +130,9 @@ void setupLighting()
 	// Default : lighting
 	glEnable(GL_LIGHT0);
 	glEnable(GL_LIGHTING);
+    
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glEnable( GL_BLEND );
 
 }
 
@@ -160,16 +173,23 @@ float square(float a) {
 }
 
 void init() {
-    glClearColor(0.1, 0.1, 0.1, 1);
+    glClearColor(0, 0, 0, 1);
     glClear(GL_COLOR_BUFFER_BIT);
     
     // Init First
+    accTime = 0;
     for(int i = 0; i < numPoints; i++) {
         float theta = (rand()%(int)ANGLE_PRECISION) / ANGLE_PRECISION * 2 * M_PI;
         float phi = (rand()%(int)ANGLE_PRECISION) / ANGLE_PRECISION * 2 * M_PI;
-        x[i] = generate_random_number(POSITION_PRECISION, 0, PARTICLE_BOUNDS) * sin(theta) * cos(phi);
-        y[i] = generate_random_number(POSITION_PRECISION, 0, PARTICLE_BOUNDS) * sin(theta) * sin(phi);
-        z[i] = generate_random_number(POSITION_PRECISION, 0, PARTICLE_BOUNDS) * cos(theta);
+        ix[i] = x[i] = generate_random_number(POSITION_PRECISION, 0, PARTICLE_BOUNDS) * sin(theta) * cos(phi);
+        iy[i] = y[i] = generate_random_number(POSITION_PRECISION, 0, PARTICLE_BOUNDS) * sin(theta) * sin(phi);
+        iz[i] = z[i] = generate_random_number(POSITION_PRECISION, 0, PARTICLE_BOUNDS) * cos(theta);
+        
+        float vtheta = (rand()%(int)ANGLE_PRECISION) / ANGLE_PRECISION * 2 * M_PI;
+        float vphi = (rand()%(int)ANGLE_PRECISION) / ANGLE_PRECISION * 2 * M_PI;
+        ivx[i] = vx[i] = generate_random_number(POSITION_PRECISION, 0, MAX_VELOCITY) * sin(vtheta) * cos(vphi);
+        ivy[i] = vy[i] = generate_random_number(POSITION_PRECISION, 0, MAX_VELOCITY) * sin(vtheta) * sin(vphi);
+        ivz[i] = vz[i] = generate_random_number(POSITION_PRECISION, 0, MAX_VELOCITY) * cos(vtheta);
     }
     
     // Init Second
@@ -181,8 +201,6 @@ void init() {
 
 void drawSphere(double x, double y, double z, double r, int res = 20)
 {
-    configureMaterials();
-
 	int i, j;
     for (i = 0; i<res; i++) {
         for (j = 0; j<2 * res; j++) {
@@ -228,9 +246,8 @@ void drawSphere(double x, double y, double z, double r, int res = 20)
 
 }
 
-void drawCylinder(double x, double y, double z, double r, double h, int res = 20)
+void drawCylinder(double x, double y, double z, double r, double h, int res = 20, bool transient = false)
 {
-    configureMaterials();
     int i;
     
     for (i = 0; i<res; i++) {
@@ -270,6 +287,14 @@ void drawCylinder(double x, double y, double z, double r, double h, int res = 20
         // Draw Top Cap
         glBegin(GL_POLYGON);
         
+        float on[] = { 0.2f, 0.2f, 0.2f, 0.1f };
+        float off[] = { 0.2f, 0.2f, 0.2f, 0.0f };
+        if(transient) {
+            glMaterialfv(GL_FRONT, GL_DIFFUSE, on);
+            glMaterialfv(GL_FRONT, GL_AMBIENT, off);
+            glMaterialfv(GL_FRONT, GL_SPECULAR, off);
+        }
+        
         glNormal3d(0, 1, 0);
         glVertex3d(vtc_x, vtc_y, vtc_z);
         
@@ -286,11 +311,18 @@ void drawCylinder(double x, double y, double z, double r, double h, int res = 20
         
         GLfloat avAngle = (angle+nextAngle)/2;
         if(m_Smooth) glNormal3d(r*sin(angle), 0, r*cos(angle));
+        
         else glNormal3d(r*sin(avAngle), 0, r*cos(avAngle));
         glVertex3d(vt1_x, vt1_y, vt1_z);
         
         if(m_Smooth) glNormal3d(r*sin(nextAngle), 0, r*cos(nextAngle));
         glVertex3d(vt2_x, vt2_y, vt2_z);
+        
+        if(transient) {
+            glMaterialfv(GL_FRONT, GL_DIFFUSE, off);
+            glMaterialfv(GL_FRONT, GL_AMBIENT, off);
+            glMaterialfv(GL_FRONT, GL_SPECULAR, off);
+        }
         
         if(m_Smooth) glNormal3d(r*sin(nextAngle), 0, r*cos(nextAngle));
         glVertex3d(vb2_x, vb2_y, vb2_z);
@@ -317,7 +349,7 @@ void drawCylinder(double x, double y, double z, double r, double h, int res = 20
 }
 
 
-void drawPipe(float x, float y, float z, float a, float b, float c, float r) {
+void drawPipe(float x, float y, float z, float a, float b, float c, float r, float res = 5, bool transient = false) {
     
     // mid points between two points
     float midX = x + (a - x)/2;
@@ -356,7 +388,7 @@ void drawPipe(float x, float y, float z, float a, float b, float c, float r) {
     // Rotate up vector towards delta vector (aligns a object that is aligned up, to align with the two points)
     glRotatef(-deltaAngle, normalX, normalY, normalZ);
     
-    drawCylinder(0, 0, 0, r, distance, 5);
+    drawCylinder(0, 0, 0, r, distance, res, transient);
     
     glPopMatrix();
     
@@ -384,20 +416,56 @@ void drawPipe(float x, float y, float z, float a, float b, float c, float r) {
     
 }
 
-void drawFirstComposite() {
-    glPushMatrix();
-    glRotatef(((glutGet(GLUT_ELAPSED_TIME)/36.0)), 0, 1, 0);
+void updateSpheres() {
+    float deltaTime = (glutGet(GLUT_ELAPSED_TIME) - lastTime)/1000.0;
     
-    for(int i=0; i<numPoints; i++) {
-        drawSphere(x[i], y[i], z[i], 0.02, 5);
+    for( int i=0; i<numPoints; i++) {
+        x[i] += vx[i] * deltaTime;
+        y[i] += vy[i] * deltaTime;
+        z[i] += vz[i] * deltaTime;
+        
+        float t = accTime/ACTIVE_TIME > 1 ? 1 : accTime/ACTIVE_TIME;
+        vx[i] = ivx[i] * (1 - t);
+        vy[i] = ivy[i] * (1 - t);
+        vz[i] = ivz[i] * (1 - t);
     }
     
+    accTime += deltaTime;
+    cout << accTime << "\n";
+    lastTime = glutGet(GLUT_ELAPSED_TIME);
+}
+
+void drawConnections() {
+    for(int i=0; i<numPoints; i++) {
+        drawPipe(ix[i], iy[i], iz[i], x[i], y[i], z[i], 0.02, 3, true);
+    }
+}
+
+void drawFirstComposite() {
+    float t = accTime/ACTIVE_TIME > 1 ? 1 : accTime/ACTIVE_TIME;
+    if (accTime > EXPLODE_LOOP_TIME) init();
+    
+    configureMaterials();
+    
+    glPushMatrix();
+    glRotatef(((glutGet(GLUT_ELAPSED_TIME)/100.0)), 0, 1, 0);
+    
+    for(int i=0; i<numPoints; i++) {
+        float mat_emission[] = { (1 - t), (1 - t), (1 - t), 1.0f };
+        glMaterialfv(GL_FRONT, GL_EMISSION, mat_emission);
+        drawSphere(x[i], y[i], z[i], 0.02, 3);
+    }
+    
+    drawConnections();
     glPopMatrix();
+    
+    updateSpheres();
+    
     glutPostRedisplay();
 }
 
 void drawSecondComposite() {
-    
+    configureMaterials();
     if(numSpheres + 1 >= MAX_SPHERES) init();
     
     for(int i=0; i<numSpheres; i++) {
@@ -405,7 +473,7 @@ void drawSecondComposite() {
     }
     
     for(int i=0; i<numSpheres-1; i++) {
-        drawPipe(spheresX[i], spheresY[i], spheresZ[i], spheresX[i+1], spheresY[i+1], spheresZ[i+1], 0.07);
+        drawPipe(spheresX[i], spheresY[i], spheresZ[i], spheresX[i+1], spheresY[i+1], spheresZ[i+1], 0.07, 5);
     }
     
     // Can't go same way (double pipe) or go back (spoke)
@@ -473,10 +541,12 @@ void display(void)
 	
 	switch (current_object) {
 	case 0:
+        configureMaterials();
 		drawSphere(0,0,0,1);
 		break;
 	case 1:
 		// draw your second primitive object here
+        configureMaterials();
         drawCylinder(0,0,0,1,2);
 		break;
 	case 2:
