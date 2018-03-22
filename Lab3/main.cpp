@@ -14,12 +14,12 @@
 #endif
 
 #define INIT_ZOOM 1.0
-#define INIT_FOV 40.0
+#define INIT_FOV 90.0
 #define INIT_ANGLE 0
 #define INIT_ANGLE_2 0
 #define INIT_X_TRANSLATION 0
-#define INIT_NEAR_CP 1
-#define INIT_FAR_CP 100
+#define INIT_NEAR_CP 0.1
+#define INIT_FAR_CP 1000
 
 // global variable
 
@@ -44,10 +44,10 @@ using namespace std;
 
 // First composite components
 
-#define numPoints 500
+#define numPoints 1000
 #define ANGLE_PRECISION 36000.0
 #define POSITION_PRECISION 1000.0
-#define PARTICLE_BOUNDS 5.0
+#define PARTICLE_BOUNDS 10.0
 
 double x[numPoints],y[numPoints],z[numPoints];
 // -----------------------------------------
@@ -378,7 +378,7 @@ void drawFirstComposite() {
     glRotatef(((glutGet(GLUT_ELAPSED_TIME)/36.0)), 0, 1, 0);
     
     for(int i=0; i<numPoints; i++) {
-        drawSphere(x[i], y[i], z[i], 0.01, 5);
+        drawSphere(x[i], y[i], z[i], 0.02, 5);
     }
     
     glPopMatrix();
@@ -505,7 +505,6 @@ void setCameraBestAngle() {
     zoom = INIT_ZOOM;
     field_of_view = 90;
     x_translation = INIT_X_TRANSLATION;
-//    glMatrixMode(GL_MODELVIEW);
     gluLookAt(0, 0, 0, 1, 1, -1, 0, 1, 0);
     //TIPS: Adjust gluLookAt function to change camera position
     
