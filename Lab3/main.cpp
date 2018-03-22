@@ -265,30 +265,7 @@ void drawCylinder(double x, double y, double z, double r, double h)
         glEnd();
     }
 }
-void drawFirstComposite() {
-    
-    glPushMatrix();
-    glRotatef((glutGet(GLUT_ELAPSED_TIME)/3)%360, 0, 1, 0);
-    
-    
-    int n = 20;
-    double r = 1;
-    for(int i=0; i<n; i++) {
-        drawSphere(20-i , r*cos(i*M_PI*2/8), i*0.1f-n*0.1/2, r*sin(i*M_PI*2/8), 0.1f);
-        r -= 0.05f;
-    }
-    
-    
-    glPopMatrix();
-    
-    glPushMatrix();
-    glRotatef(90, 0, 0, 1);
-    glRotatef(45, 1, 0, 0);
-    drawCylinder(0, 0, 0, 0.1, 1);
-    glPopMatrix();
-    
-    glutPostRedisplay();
-}
+
 
 void drawPipe(float x, float y, float z, float a, float b, float c) {
     
@@ -370,6 +347,13 @@ void drawSecondComposite() {
     glutPostRedisplay();
 }
 
+void drawFirstComposite() {
+    
+    
+    
+    glutPostRedisplay();
+}
+
 void display(void)
 {//Add Projection tool and Camera Movement somewhere here
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -381,9 +365,9 @@ void display(void)
     glMatrixMode(GL_MODELVIEW);
     gluLookAt(0, 0, 0, 1, 1, -1, 0, 1, 0); // eye, center, up
 
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-	glPushMatrix();
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+    glPushMatrix();
 	glTranslatef(0, 0, -6);
 	glRotatef(angle2, 1.0, 0.0, 0.0);
 	glRotatef(angle, 0.0, 1.0, 0.0);
