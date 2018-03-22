@@ -19,7 +19,7 @@
 #define INIT_ANGLE_2 0
 #define INIT_X_TRANSLATION 0
 #define INIT_NEAR_CP 1
-#define INIT_FAR_CP 80
+#define INIT_FAR_CP 100
 
 // global variable
 
@@ -65,8 +65,12 @@ double x[numPoints],y[numPoints],z[numPoints];
 #define Y 1;
 #define Z 2;
 
+#define PIPE_START_X 0
+#define PIPE_START_Y 0
+#define PIPE_START_Z -5
+
 #define PIPE_DISTANCE 1
-#define MAX_SPHERES 1000
+#define MAX_SPHERES 250
 
 int lastDirection = FORWARD;
 int direction = FORWARD;
@@ -76,9 +80,9 @@ float spheresY[MAX_SPHERES];
 float spheresZ[MAX_SPHERES];
 int numSpheres = 0;
 
-float pipeX = 0;
-float pipeY = 0;
-float pipeZ = 0;
+float pipeX;
+float pipeY;
+float pipeZ;
 
 // ----------------------------------------
 
@@ -148,6 +152,7 @@ void init() {
     glClearColor(0.1, 0.1, 0.1, 1);
     glClear(GL_COLOR_BUFFER_BIT);
     
+    // Init First
     for(int i = 0; i < numPoints; i++) {
         float theta = (rand()%(int)ANGLE_PRECISION) / ANGLE_PRECISION * 2 * M_PI;
         float phi = (rand()%(int)ANGLE_PRECISION) / ANGLE_PRECISION * 2 * M_PI;
@@ -155,14 +160,19 @@ void init() {
         y[i] = generate_random_number(POSITION_PRECISION, 0, PARTICLE_BOUNDS) * sin(theta) * sin(phi);
         z[i] = generate_random_number(POSITION_PRECISION, 0, PARTICLE_BOUNDS) * cos(theta);
     }
+    
+    // Init Second
+    numSpheres = 0;
+    pipeX = PIPE_START_X;
+    pipeY = PIPE_START_Y;
+    pipeZ = PIPE_START_Z;
 }
 
-void drawSphere(int res, double x, double y, double z, double r)
+void drawSphere(double x, double y, double z, double r, int res = 20)
 {
     configureMaterials();
 
 	int i, j;
-//    int n = 20;
     for (i = 0; i<res; i++) {
         for (j = 0; j<2 * res; j++) {
             
@@ -207,14 +217,14 @@ void drawSphere(int res, double x, double y, double z, double r)
 
 }
 
-void drawCylinder(int n, double x, double y, double z, double r, double h)
+void drawCylinder(double x, double y, double z, double r, double h, int res = 20)
 {
     configureMaterials();
     int i;
     
-    for (i = 0; i<n; i++) {
-        float angle = i * M_PI * 2 / n;
-        float nextAngle = (i + 1) * M_PI * 2 / n;
+    for (i = 0; i<res; i++) {
+        float angle = i * M_PI * 2 / res;
+        float nextAngle = (i + 1) * M_PI * 2 / res;
         
         // Vertex top center
         GLfloat vtc_x = x;
@@ -311,8 +321,9 @@ void drawPipe(float x, float y, float z, float a, float b, float c, float r) {
     // distance between two points
     float distance = sqrtf(square(deltaX) + square(deltaY) + square(deltaZ));
     
+    // the two points form an up vector (delta vector is the up vector)
     if(deltaX == 0 && deltaZ == 0) {
-        drawCylinder(5, midX, midY, midZ, r, distance);
+        drawCylinder(midX, midY, midZ, r, distance, 5);
         return;
     }
     
@@ -331,10 +342,10 @@ void drawPipe(float x, float y, float z, float a, float b, float c, float r) {
     // Set local transform to where the cylinder is
     glTranslatef(midX, midY, midZ);
     
-    // Rotate up vector towards delta vector (aligns a object that is aligned up to align with two points)
+    // Rotate up vector towards delta vector (aligns a object that is aligned up, to align with the two points)
     glRotatef(-deltaAngle, normalX, normalY, normalZ);
     
-    drawCylinder(5, 0, 0, 0, r, distance);
+    drawCylinder(0, 0, 0, r, distance, 5);
     
     glPopMatrix();
     
@@ -343,25 +354,19 @@ void drawPipe(float x, float y, float z, float a, float b, float c, float r) {
     if(DEBUG_VECTORS) {
         //debug - draw up vector
         glBegin(GL_LINES);
-        glColor3f(1, 1, 1);
         glVertex3f(midX, midY, midZ);
-        glColor3f(1, 1, 1);
         glVertex3f(midX, midY + 1, midZ);
         glEnd();
         
         //debug - draw delta vector
         glBegin(GL_LINES);
-        glColor3f(1, 0, 0);
         glVertex3f(midX, midY, midZ);
-        glColor3f(1, 0, 0);
         glVertex3f(midX + deltaX, midY + deltaY, midZ + deltaZ);
         glEnd();
         
         //debug - draw normal vector
         glBegin(GL_LINES);
-        glColor3f(0, 1, 0);
         glVertex3f(midX, midY, midZ);
-        glColor3f(0, 1, 0);
         glVertex3f(midX + normalX, midY + normalY, midZ + normalZ);
         glEnd();
     }
@@ -373,7 +378,7 @@ void drawFirstComposite() {
     glRotatef(((glutGet(GLUT_ELAPSED_TIME)/36.0)), 0, 1, 0);
     
     for(int i=0; i<numPoints; i++) {
-        drawSphere(5, x[i], y[i], z[i], 0.01);
+        drawSphere(x[i], y[i], z[i], 0.01, 5);
     }
     
     glPopMatrix();
@@ -382,15 +387,15 @@ void drawFirstComposite() {
 
 void drawSecondComposite() {
     
+    if(numSpheres + 1 >= MAX_SPHERES) init();
+    
     for(int i=0; i<numSpheres; i++) {
-        drawSphere(5, spheresX[i], spheresY[i], spheresZ[i], 0.1);
+        drawSphere(spheresX[i], spheresY[i], spheresZ[i], 0.1, 5);
     }
     
     for(int i=0; i<numSpheres-1; i++) {
-        drawPipe(spheresX[i], spheresY[i], spheresZ[i], spheresX[i+1], spheresY[i+1], spheresZ[i+1], 0.05);
+        drawPipe(spheresX[i], spheresY[i], spheresZ[i], spheresX[i+1], spheresY[i+1], spheresZ[i+1], 0.07);
     }
-    
-    if(numSpheres + 1 >= MAX_SPHERES) return;
     
     while(direction == lastDirection) {
         direction = rand()%6;
@@ -442,7 +447,7 @@ void display(void)
     glLoadIdentity();
     gluPerspective(field_of_view, 1.0, near_clipping_plane, far_clipping_plane);
     glMatrixMode(GL_MODELVIEW);
-    gluLookAt(0, 0, 0, 1, 1, -1, 0, 1, 0); // eye, center, up
+//    gluLookAt(0, 0, 0, 1, 1, -1, 0, 1, 0); // eye, center, up
 
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
@@ -455,11 +460,11 @@ void display(void)
 	
 	switch (current_object) {
 	case 0:
-		drawSphere(20,0,0,0,1);
+		drawSphere(0,0,0,1);
 		break;
 	case 1:
 		// draw your second primitive object here
-        drawCylinder(20,0,0,0,1,2);
+        drawCylinder(0,0,0,1,2);
 		break;
 	case 2:
 		// draw your first composite object here
@@ -486,6 +491,9 @@ void resetCamera(){
     field_of_view = INIT_FOV;
     x_translation = INIT_X_TRANSLATION;
     // include resetting of gluPerspective & gluLookAt.
+    gluLookAt(0, 0, 0, 1, 1, -1, 0, 1, 0);
+    gluPerspective(field_of_view, 1.0, near_clipping_plane, far_clipping_plane);
+    
 	return;
 }
 
@@ -494,9 +502,11 @@ void setCameraBestAngle() {
     zoom = INIT_ZOOM;
     angle =   INIT_ANGLE;
     angle2 =   INIT_ANGLE_2;
-    zoom = 2.0;
-    field_of_view = INIT_FOV;
+    zoom = INIT_ZOOM;
+    field_of_view = 90;
     x_translation = INIT_X_TRANSLATION;
+//    glMatrixMode(GL_MODELVIEW);
+    gluLookAt(0, 0, 0, 1, 1, -1, 0, 1, 0);
     //TIPS: Adjust gluLookAt function to change camera position
     
 	return;
@@ -575,7 +585,9 @@ void keyboard(unsigned char key, int x, int y)
 	case '4':
 		current_object = key - '1';
 		break;
-
+    case '0':
+        init();
+        break;
 	case 27:
 		exit(0);
 		break;
