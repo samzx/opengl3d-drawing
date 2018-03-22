@@ -397,10 +397,11 @@ void drawSecondComposite() {
         drawPipe(spheresX[i], spheresY[i], spheresZ[i], spheresX[i+1], spheresY[i+1], spheresZ[i+1], 0.07);
     }
     
-    while(direction == lastDirection) {
+    // Can't go same way (double pipe) or go back (spoke)
+    while(direction == lastDirection || direction == (lastDirection%2 == 0 ? (lastDirection + 1)%6 : (lastDirection + 5)%6) ) {
         direction = rand()%6;
     }
-    
+
     switch (direction) {
         case FORWARD:
             pipeX += PIPE_DISTANCE;
