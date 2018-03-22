@@ -285,8 +285,8 @@ void drawCylinder(double x, double y, double z, double r, double h, int res = 20
         // Draw Top Cap
         glBegin(GL_POLYGON);
         
-        float on[] = { 0.2f, 0.2f, 0.2f, 0.1f };
-        float off[] = { 0.2f, 0.2f, 0.2f, 0.0f };
+        float on[] = { 0.0f, 0.0f, 1.0f, 0.25f };
+        float off[] = { 0.1f, 0.0f, 0.0f, 0.0f };
         if(transient) {
             glMaterialfv(GL_FRONT, GL_DIFFUSE, on);
             glMaterialfv(GL_FRONT, GL_AMBIENT, off);
