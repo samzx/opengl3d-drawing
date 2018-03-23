@@ -429,7 +429,6 @@ void updateSpheres() {
     }
     
     accTime += deltaTime;
-    cout << accTime << "\n";
     lastTime = glutGet(GLUT_ELAPSED_TIME);
 }
 
@@ -604,7 +603,7 @@ void setCameraBestAngle() {
 }
 
 void keyboard(unsigned char key, int x, int y)
-{//add additional commands here to change Field of View and movement
+{
 	switch (key) {
 	case 'p':
 	case 'P':
@@ -690,10 +689,27 @@ void keyboard(unsigned char key, int x, int y)
 	glutPostRedisplay();
 }
 
+void sKeyboard(int key, int x, int y) {
+    switch(key) {
+        case GLUT_KEY_UP:
+            eyeY+= 0.1f;
+            break;
+        case GLUT_KEY_DOWN:
+            eyeY-= 0.1f;
+            break;
+        case GLUT_KEY_RIGHT:
+            eyeX+= 0.1f;
+            break;
+        case GLUT_KEY_LEFT:
+            eyeX-= 0.1f;
+            break;
+        default:
+            break;
+    }
+    glutPostRedisplay();
+}
 
-
-void
-mouse(int button, int state, int x, int y)
+void mouse(int button, int state, int x, int y)
 {
 	if (state == GLUT_DOWN) {
 		mouseButton = button;
@@ -756,6 +772,7 @@ int main(int argc, char **argv)
 	glutMouseFunc(mouse);
 	glutMotionFunc(motion);
 	glutKeyboardFunc(keyboard);
+    glutSpecialFunc(sKeyboard);
 	setupLighting();
     srand((uint32_t)time(NULL));
     init();
