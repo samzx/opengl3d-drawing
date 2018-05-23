@@ -1,5 +1,10 @@
 # 3d-intro-lab3-mac
-2d drawing in openGL in c++
+
+Custom 3d drawing in C++ using openGL glut library
+- Primitive objects: Sphere and Cylinder
+- Gouraud shading implementation
+- Implementation of the Phong illumination model
+- Animations and procedural generation
 
 ## Demo:
 <p align="center">
