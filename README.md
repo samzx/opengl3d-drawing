@@ -1,4 +1,4 @@
-# 3d-intro-lab3-mac
+# opengl2d-drawing
 
 Custom 3d drawing in C++ using openGL glut library
 - Primitive objects: Sphere and Cylinder
